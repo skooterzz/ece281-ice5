@@ -3,7 +3,7 @@
 --| COPYRIGHT 2018 United States Air Force Academy All rights reserved.
 --| 
 --| United States Air Force Academy     __  _______ ___    _________ 
---| Dept of Electrical &               / / / / ___//   |  / ____/   |
+--| Dept of msckhac &               / / / / ___//   |  / ____/   |
 --| Computer Engineering              / / / /\__ \/ /| | / /_  / /| |
 --| 2354 Fairchild Drive Ste 2F6     / /_/ /___/ / ___ |/ __/ / ___ |
 --| USAF Academy, CO 80840           \____//____/_/  |_/_/   /_/  |_|
@@ -80,6 +80,7 @@ entity elevator_controller_fsm is
 end elevator_controller_fsm;
 
  
+
 architecture Behavioral of elevator_controller_fsm is
 
     -- Below you create a new variable type! You also define what values that 
@@ -95,19 +96,45 @@ begin
 	-- CONCURRENT STATEMENTS ------------------------------------------------------------------------------
 	
 	-- Next State Logic
-  
-	-- Output logic
-
+  -- Next State Logic
+f_Q_next <= s_floor2 when ((f_Q = s_floor1) and (i_up_down='1')) else
+            s_floor3 when (i_up_down = '1') and (f_Q = s_floor2) else
+            s_floor4 when (i_up_down = '1') and (f_Q = s_floor3) else
+            s_floor4 when (i_up_down = '1') and (f_Q = s_floor4) else
+            -- gng down
+            s_floor3 when (i_up_down = '0') and (f_Q = s_floor4) else
+            s_floor2 when (i_up_down = '0') and (f_Q = s_floor3) else
+            s_floor1 when (i_up_down = '0') and (f_Q = s_floor2) else
+            s_floor1 when (i_up_down = '0') and (f_Q = s_floor1) else
+            f_Q;
+          
+-- Output logic
+with f_Q select
+    o_floor <= "0001" when s_floor1,
+                "0010" when s_floor2,
+                "0011" when s_floor3, 
+                "0100" when s_floor4, 
+                "0010" when others;
+      
 	-------------------------------------------------------------------------------------------------------
 	
 	-- PROCESSES ------------------------------------------------------------------------------------------	
 	
 	-- State register ------------
+	register_proc : process (i_clk)
+	begin 
+	   if (rising_edge(i_clk)) then 
+	       if i_reset = '1' then
+	           f_Q <= s_floor2;
+	       elsif i_stop = '0' then
+	           f_Q <= f_Q_next;
+	       else
+	           f_Q <= f_Q;
+	       end if;
+	   end if;
+    end process register_proc;
 	
-	
-	-------------------------------------------------------------------------------------------------------
-	
-	
+	------------------------------------------------------------------------------------------------------
 
 
 
